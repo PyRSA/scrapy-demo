@@ -3,6 +3,33 @@ import sys
 from scrapy import cmdline
 
 
+def crawler_process():
+    from scrapy.crawler import CrawlerProcess
+    from scrapy.utils.project import get_project_settings
+    process = CrawlerProcess(get_project_settings())
+    from quotes.spiders.schedule import ScheduleSpider
+    from quotes.spiders.author import AuthorSpider
+    process.crawl(ScheduleSpider)
+    process.crawl(AuthorSpider)
+    process.start()
+
+
+def crawler_runner():
+    from scrapy.crawler import CrawlerRunner
+    from scrapy.utils.project import get_project_settings
+    from twisted.internet import reactor
+    from scrapy.utils.log import configure_logging
+    configure_logging()
+    runner = CrawlerRunner(get_project_settings())
+    from quotes.spiders.schedule import ScheduleSpider
+    from quotes.spiders.author import AuthorSpider
+    runner.crawl(ScheduleSpider)
+    runner.crawl(AuthorSpider)
+    task = runner.join()
+    task.addBoth(lambda _: reactor.stop())
+    reactor.run()
+
+
 def main(args):
     """
     scrapy crawl
@@ -42,5 +69,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:] + ['-L', 'INFO', 'author'])
+    # main(sys.argv[1:] + ['-L', 'INFO', 'author'])
+    # crawler_process()
+    crawler_runner()
 

@@ -34,6 +34,7 @@ class QuoteSpider(scrapy.Spider):
         self.logger.info(f'status code: {response.status}, response url: {response.url}')
         self.logger.debug(response.body)
 
+        # https://www.cnblogs.com/fengf233/p/11281925.html
         # 提取响应中的标题内容
         ################################################################################################################
         # CSS 选择器提取元素

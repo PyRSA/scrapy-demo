@@ -1,4 +1,4 @@
-# Scrapy settings for quotes project
+# Scrapy settings for JD project
 #
 # For simplicity, this file contains only settings considered important or
 # commonly used. You can find more settings consulting the documentation:
@@ -7,32 +7,25 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'quotes'
+BOT_NAME = 'jdbook'
 
-SPIDER_MODULES = ['quotes.spiders']
-NEWSPIDER_MODULE = 'quotes.spiders'
-
-# Logger Level
-LOG_LEVEL = 'INFO'
-
-# Depth first, last in first out
-# 如果为零（默认），则不从深度进行优先级调整
-# 正值将降低优先级，即，较高深度请求将被稍后处理 ; 这通常用于做广度优先爬网（BFO）
-# 负值将增加优先级，即，较高深度请求将被更快地处理（DFO）
-DEPTH_PRIORITY = 0
-SCHEDULER_DISK_QUEUE = 'scrapy.squeues.PickleLifoDiskQueue'
-SCHEDULER_MEMORY_QUEUE = 'scrapy.squeues.LifoMemoryQueue'
-
-# Breadth first, first in first out
-# DEPTH_PRIORITY = 1
-# SCHEDULER_DISK_QUEUE = 'scrapy.squeues.PickleFifoDiskQueue'
-# SCHEDULER_MEMORY_QUEUE = 'scrapy.squeues.FifoMemoryQueue'
+SPIDER_MODULES = ['jdbook.spiders']
+NEWSPIDER_MODULE = 'jdbook.spiders'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-USER_AGENT = 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36'
+# USER_AGENT = 'JD (+http://www.yourdomain.com)'
+# USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36'
+
+USER_AGENT = 'scrapy-redis (+https://github.com/rolando/scrapy-redis)'
+# 设置重复过滤器的模块
+DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
+# 设置调取器，scrap_redis中的调度器具备与数据库交互的功能
+SCHEDULER = "scrapy_redis.scheduler.Scheduler"
+# 设置当爬虫结束的时候是否保持redis数据库中的去重集合与任务队列
+SCHEDULER_PERSIST = True
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = False
+ROBOTSTXT_OBEY = True
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 # CONCURRENT_REQUESTS = 32
@@ -60,14 +53,14 @@ ROBOTSTXT_OBEY = False
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 # SPIDER_MIDDLEWARES = {
-#    'quotes.middlewares.QuotesSpiderMiddleware': 543,
+#    'JD.middlewares.JdSpiderMiddleware': 543,
 # }
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-# DOWNLOADER_MIDDLEWARES = {
-#    'quotes.middlewares.QuotesDownloaderMiddleware': 543,
-# }
+DOWNLOADER_MIDDLEWARES = {
+    'JD.middlewares.JdDownloaderMiddleware': 543,
+}
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
@@ -78,8 +71,15 @@ ROBOTSTXT_OBEY = False
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   'quotes.pipelines.QuotesPipeline': 300,
+    # 'JD.pipelines.JdPipeline': 300,
+    # 当开启该管道，该管道将会把数据存到Redis数据库中
+    'scrapy_redis.pipelines.RedisPipeline': 400,
 }
+REDIS_URL = "redis://127.0.0.1:6379"
+
+
+LOG_LEVEL = 'DEBUG'
+DOWNLOAD_DELAY = 1
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
@@ -101,5 +101,3 @@ ITEM_PIPELINES = {
 # HTTPCACHE_DIR = 'httpcache'
 # HTTPCACHE_IGNORE_HTTP_CODES = []
 # HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
-
-DOWNLOADER_CLIENT_TLS_METHOD = 'TLS'
